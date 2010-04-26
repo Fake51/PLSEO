@@ -50,11 +50,17 @@ class SearchClient
     const GOOGLECOM = 'GoogleComEngine';
     const GOOGLEDK = 'GoogleDkEngine';
     const GOOGLEUK = 'GoogleUkEngine';
+    const YAHOOCOM = 'YahooComEngine';
+    const YAHOODK = 'YahooDkEngine';
+    const YAHOOUK = 'YahooUkEngine';
 
     private $_engines = array(
         self::GOOGLECOM,
         self::GOOGLEDK,
         self::GOOGLEUK,
+        self::YAHOOCOM,
+        self::YAHOODK,
+        self::YAHOOUK,
     );
 
     public function __construct($site, $keyword, $pages = 10)
@@ -143,7 +149,7 @@ class SearchClient
 
     /**
      * does the actual querying using the engines registered with _registerEngine
-     * does querying in batches with .5 seconds in between batches and 0.0-0.2
+     * does querying in batches with .25 seconds in between batches and 0.0-0.2
      * seconds between each engine
      *
      * @throws Exception
@@ -160,7 +166,7 @@ class SearchClient
         $break = false;
         while ($this->_max_pages > $i && !$break)
         {
-            usleep(500000);
+            usleep(250000);
             foreach ($this->_engines_running as $name => $engine)
             {
                 if (is_object($engine) && ($rank = $engine->getNextResultPage()))
