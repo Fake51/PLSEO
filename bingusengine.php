@@ -1,4 +1,3 @@
-#!/usr/bin/env php
 <?php
     /**
      * Copyright 2010 Peter Lind. All rights reserved.
@@ -29,39 +28,28 @@
      *
      * PHP version 5
      *
-     * @package   Client
+     * @package   Engine
      * @author    Peter Lind <peter@plphp.dk>
      * @copyright 2010 Peter Lind
      * @license   http://plind.dk/plseo/#license New BSD License
      * @link      http://www.github.com/Fake51/PLSEO
      */
 
+require_once 'bingengine.php';
 
-if ($_SERVER['argc'] < 3)
+    /**
+     * Bing US engine - queries Bing US for national results
+     *
+     * @package    Engine
+     * @author     Peter Lind <peter@plphp.dk>
+     */
+class BingUsEngine extends BingEngine
 {
-    echo <<<TXT
-PLSEO - Search Engine Position Checker
-Version: 0.8
-Author: Peter Lind <peter@plphp.dk>
+    protected $baseurl = "http://www.bing.com/";
+    protected $locale = '&mkt=en-US';
 
-Usage:
-    <run_script.sh> domain keyword(s) [search engine] [max pages to check] [user agent]
-
-Example:
-    ./run_script.sh plphp.dk "typo3" 15
-
-TXT;
-    exit;
+    public function __construct($site, $keyword, $pages)
+    {
+        parent::__construct($site, $keyword, $pages);
+    }
 }
-
-require_once dirname(__FILE__) . '/searchclient.php';
-
-$site    = $_SERVER['argv'][1];
-$keyword = $_SERVER['argv'][2];
-$engine  = !empty($_SERVER['argv'][3]) ? $_SERVER['argv'][3] : null;
-$pages   = !empty($_SERVER['argv'][4]) && intval($_SERVER['argv'][4]) ? $_SERVER['argv'][4] : 10;
-$agent   = !empty($_SERVER['argv'][5]) ? $_SERVER['argv'][5] : null;
-
-$client = new SearchClient($site, $keyword, $pages, $agent);
-var_dump($client->findRankings($engine));
-

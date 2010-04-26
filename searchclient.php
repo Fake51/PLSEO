@@ -46,6 +46,7 @@ class SearchClient
     private $_site;
     private $_keyword;
     private $_max_pages;
+    private $_user_agent = '';
 
     const GOOGLECOM = 'GoogleComEngine';
     const GOOGLEDK = 'GoogleDkEngine';
@@ -53,6 +54,9 @@ class SearchClient
     const YAHOOCOM = 'YahooComEngine';
     const YAHOODK = 'YahooDkEngine';
     const YAHOOUK = 'YahooUkEngine';
+    const BINGUK = 'BingUkEngine';
+    const BINGUS = 'BingUsEngine';
+    const BINGDK = 'BingDkEngine';
 
     private $_engines = array(
         self::GOOGLECOM,
@@ -61,13 +65,20 @@ class SearchClient
         self::YAHOOCOM,
         self::YAHOODK,
         self::YAHOOUK,
+        self::BINGDK,
+        self::BINGUK,
+        self::BINGUS,
     );
 
-    public function __construct($site, $keyword, $pages = 10)
+    public function __construct($site, $keyword, $pages = 10, $useragent = null)
     {
         $this->_site = $site;
         $this->_keyword = $keyword;
         $this->_max_pages = $pages;
+        if ($useragent)
+        {
+            $this->_user_agent = $useragent;
+        }
     }
 
     /**
@@ -139,6 +150,10 @@ class SearchClient
             require_once dirname(__FILE__) . '/' . strtolower($engine) . '.php';
             $engine_object = new $engine($this->_site, $this->_keyword, $this->_max_pages);
             $this->_engines_running[$engine] = $engine_object;
+            if ($this->_user_agent)
+            {
+                $engine_object->setUserAgent($this->_user_agent);
+            }
             //$engine_object->setDebugMode(true);
         }
         catch (Exception $e)
