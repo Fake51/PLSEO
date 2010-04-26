@@ -1,0 +1,15 @@
+Introduction
+============
+This is a set of stand-alone SEO tools, meant to be run on their own and the
+output captured and used in some fashion.
+
+Usage
+=====
+The tools are supposed to be run using the .sh files. If you're on Windows
+or Mac have a look inside those files, there should be info enough for you to
+be able to create a .bat or the likes. Also, all .sh files should output some
+help text if you just run the without any parameters.
+
+Confused?
+=========
+You can contact the author - Peter Lind - of the tools on peter@plphp.dk
