@@ -1,4 +1,4 @@
-#!/usr/bin/php
+#!/usr/bin/env php
 <?php
     /**
      * Copyright 2010 Peter Lind. All rights reserved.

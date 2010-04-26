@@ -49,10 +49,12 @@ class SearchClient
 
     const GOOGLECOM = 'GoogleComEngine';
     const GOOGLEDK = 'GoogleDkEngine';
+    const GOOGLEUK = 'GoogleUkEngine';
 
     private $_engines = array(
         self::GOOGLECOM,
         self::GOOGLEDK,
+        self::GOOGLEUK,
     );
 
     public function __construct($site, $keyword, $pages = 10)
