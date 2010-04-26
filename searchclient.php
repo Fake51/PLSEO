@@ -181,7 +181,7 @@ class SearchClient
         $break = false;
         while ($this->_max_pages > $i && !$break)
         {
-            usleep(250000);
+            usleep(500000);
             foreach ($this->_engines_running as $name => $engine)
             {
                 if (is_object($engine) && ($rank = $engine->getNextResultPage()))
