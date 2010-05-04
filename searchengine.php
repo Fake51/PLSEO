@@ -45,20 +45,17 @@
 abstract class SearchEngine
 {
     protected $max_pages;
-    protected $site;
     protected $keyword;
     private $_current_page = 0;
+    private $_pages = array();
+    protected $_use_cookies = false;
 
     protected $debug = false;
 
     private $_user_agent = "Mozilla/5.0 (X11; U; Linux i686; en-US) AppleWebKit/532.5 (KHTML, like Gecko) Chrome/4.0.249.43 Safari/532.5";
 
-    public function __construct($site, $keyword, $pages = 10)
+    public function __construct($keyword, $pages = 10)
     {
-        if (!is_string($site) || empty($site)) throw new Exception ("Bad site query for");
-        $this->site = strpos($site, 'http') !== false ? substr($site, strpos($site, '://') + 3) : $site;
-        $this->site = substr($this->site, -1) == '/' ? substr($this->site, 0, -1) : $this->site;
-
         $this->max_pages = $pages;
         $this->keyword = $keyword;
     }
@@ -101,19 +98,43 @@ abstract class SearchEngine
     }
 
     /**
-     * returns an array consisting of
-     * page => item on page
+     * fetches the next result page from the search engine
+     * and parses it. If the domain is linked on the page
+     * it returns an array identifying the link position, if
+     * not it returns null
      *
-     * null returned indicates the site wasn't
-     * found within the specified number of pages
-     *
-     * @param string $site    - site to look for
-     * @param string $keyword - keyword to check
-     *
+     * @throws Exception
      * @access public
-     * @return array|null
+     * @return void
      */
-    abstract public function getNextResultPage();
+    public function getNextResultPage()
+    {
+        $page = $this->nextPage();
+
+        $curl = curl_init($this->getSearchUrl($page));
+        curl_setopt($curl, CURLOPT_USERAGENT, $this->getUserAgent());
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        if ($this->_use_cookies)
+        {
+            curl_setopt($curl, CURLOPT_COOKIEJAR, $this->getCookieFileName());
+        }
+
+        if (!($return = curl_exec($curl)))
+        {
+            throw new Exception("Failed to query search engine in " . get_class($this));
+        }
+        if ($this->debug)
+        {
+            print_r(curl_getinfo($curl));
+        }
+        try
+        {
+            $this->_pages[$page - 1] = $this->_parseCurlReturn($return);
+        }
+        catch(Exception $e)
+        {
+        }
+    }
 
     public function getCurrentPage()
     {
@@ -122,11 +143,21 @@ abstract class SearchEngine
 
     public function nextPage()
     {
-        return ++$this->_current_page;
+        $this->_current_page++;
+        if ($this->debug)
+        {
+            echo "Fetching page #{$this->getCurrentPage()} for " . get_class($this) . PHP_EOL;
+        }
+        return $this->_current_page;
     }
 
     public function setDebugMode($bool)
     {
         $this->debug = !!$bool;
+    }
+
+    public function getResults()
+    {
+        return $this->_pages;
     }
 }

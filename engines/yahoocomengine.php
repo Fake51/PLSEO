@@ -46,9 +46,4 @@ require_once 'yahooengine.php';
 class YahooComEngine extends YahooEngine
 {
     protected $baseurl = "http://search.yahoo.com/";
-
-    public function __construct($site, $keyword, $pages)
-    {
-        parent::__construct($site, $keyword, $pages);
-    }
 }

@@ -38,7 +38,7 @@
 
     $versiontext = <<<TXT
 PLSEO - Search Engine Position Checker
-Version: 0.8.1
+Version: 0.8.3
 Author: Peter Lind <peter@plphp.dk>
 
 TXT;

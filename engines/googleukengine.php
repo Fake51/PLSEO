@@ -47,9 +47,9 @@ class GoogleUkEngine extends GoogleEngine
 {
     protected $baseurl = "http://www.google.co.uk/";
 
-    public function __construct($site, $keyword, $pages)
+    public function __construct($keyword, $pages)
     {
-        parent::__construct($site, $keyword, $pages);
+        parent::__construct($keyword, $pages);
         $curl = curl_init($this->baseurl);
         curl_setopt($curl, CURLOPT_COOKIEJAR, $this->getCookieFileName());
         curl_setopt($curl, CURLOPT_USERAGENT, $this->getUserAgent());

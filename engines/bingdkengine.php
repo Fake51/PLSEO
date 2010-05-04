@@ -48,8 +48,4 @@ class BingDkEngine extends BingEngine
     protected $baseurl = "http://www.bing.com/";
     protected $locale = '&mkt=da-DK';
 
-    public function __construct($site, $keyword, $pages)
-    {
-        parent::__construct($site, $keyword, $pages);
-    }
 }

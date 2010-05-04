@@ -46,11 +46,15 @@ require_once dirname(__FILE__) . '/searchengine.php';
 class SearchClient
 {
     private $_site;
+    private $_site_array;
     private $_keyword;
+    private $_keyword_array;
     private $_max_pages = 10;
+    private $_output_file;
     private $_user_agent = '';
     private $_search_engine;
     private $_debugging = false;
+    private $_running_multiple_keywords = false;
 
     const GOOGLECOM = 'GoogleComEngine';
     const GOOGLEDK = 'GoogleDkEngine';
@@ -181,19 +185,92 @@ class SearchClient
         $this->_keyword = $keyword;
     }
 
+    /**
+     * sets the output file to direct output to
+     *
+     * @param string $outputfile
+     *
+     * @throws Exception
+     * @access public
+     * @return void
+     */
     public function setOutputFile($outputfile)
     {
-        throw new Exception("Functionality not implemented yet" . PHP_EOL);
+        if (!is_writable($outputfile))
+        {
+            throw new Exception("Cannot write to submitted outputfile" . PHP_EOL);
+        }
+        $this->_output_file = $outputfile;
     }
 
+    /**
+     * sets a keyword file to grab keywords from
+     *
+     * @param string $keywordfile
+     *
+     * @throws Exception
+     * @access public
+     * @return void
+     */
     public function setKeywordFile($keywordfile)
     {
-        throw new Exception("Functionality not implemented yet" . PHP_EOL);
+        if (!is_file($keywordfile) || !($file = file_get_contents($keywordfile)))
+        {
+            throw new Exception("Could not read from keyword file" . PHP_EOL);
+        }
+        $this->_keyword_array = array_filter(explode("\n", str_replace(array("\r\n", "\r"), "\n", $file)));
     }
 
+    /**
+     * sets a site file to grab sites from
+     *
+     * @param string $sitefile
+     *
+     * @throws Exception
+     * @access public
+     * @return void
+     */
     public function setSiteFile($sitefile)
     {
-        throw new Exception("Functionality not implemented yet" . PHP_EOL);
+        if (!is_file($sitefile) || !($file = file_get_contents($sitefile)))
+        {
+            throw new Exception("Could not read from sitefile" . PHP_EOL);
+        }
+        $this->_site_array = array_filter(explode("\n", str_replace(array("\r\n", "\r"), "\n", $file)));
+    }
+
+    /**
+     * runs multiple keyword checks, waiting a minute between each run
+     *
+     * @access private
+     * @return mixed
+     */
+    private function _run_multiple_keywords()
+    {
+        $this->_running_multiple_keywords = true;
+        $return = array();
+        $keycount = count($this->_keyword_array);
+        for ($i = 0; $i < $keycount; ++$i)
+        {
+            $this->_keyword = $this->_keyword_array[$i];
+            $result = $this->findRankings(); 
+            if (empty($this->_output_file))
+            {
+                $return[$this->_keyword_array[$i]] = $result;
+            }
+            else
+            {
+                $return = $result;
+            }
+
+            // avoid final 60 secs wait
+            if ($i + 1 == $keycount)
+            {
+                break;
+            }
+            sleep(60);
+        }
+        return $return;
     }
 
     /**
@@ -206,7 +283,11 @@ class SearchClient
      */
     public function findRankings()
     {
-        if (empty($this->_keyword) || empty($this->_site))
+        if (!empty($this->_keyword_array) && empty($this->_running_multiple_keywords))
+        {
+            return $this->_run_multiple_keywords();
+        }
+        if (empty($this->_keyword) || (empty($this->_site) && empty($this->_site_array)))
         {
             throw new Exception("Lacking keyword or site" . PHP_EOL);
         }
@@ -230,7 +311,13 @@ class SearchClient
         }
         try
         {
-            return $this->_queryEngines();
+            $return = $this->_queryEngines();
+            if (empty($this->_output_file))
+            {
+                return $return;
+            }
+            file_put_contents($this->_output_file, $return, FILE_APPEND);
+            return true;
         }
         catch (Exception $e)
         {
@@ -252,7 +339,7 @@ class SearchClient
         try
         {
             require_once dirname(__FILE__) . '/engines/' . strtolower($engine) . '.php';
-            $engine_object = new $engine($this->_site, $this->_keyword, $this->_max_pages);
+            $engine_object = new $engine($this->_keyword, $this->_max_pages);
             $this->_engines_running[$engine] = $engine_object;
             if ($this->_user_agent)
             {
@@ -285,32 +372,19 @@ class SearchClient
             throw new Exception("No engines to query");
         }
         $i = 0;
-        $break = false;
-        while ($this->_max_pages > $i && !$break)
+        while ($this->_max_pages > $i)
         {
             usleep(500000);
             foreach ($this->_engines_running as $name => $engine)
             {
-                if (is_object($engine) && ($rank = $engine->getNextResultPage()))
-                {
-                    $this->_engines_running[$name] = $rank;
-                }
-                usleep(mt_rand(0, 2) * 100000);
-            }
-            $break = true;
-            foreach ($this->_engines_running as $engine)
-            {
-                if (is_object($engine))
-                {
-                    $break = false;
-                    break;
-                }
+                $engine->getNextResultPage();
+                usleep(mt_rand(1, 5) * 50000);
             }
             $i++;
         }
         foreach ($this->_engines_running as $name => $engine)
         {
-            if (is_object($engine)) $this->_engines_running[$name] = null;
+            $this->_engines_running[$name] = $engine->getResults();
         }
         return $this->_engines_running;;
     }

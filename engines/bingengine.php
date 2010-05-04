@@ -47,79 +47,36 @@ class BingEngine extends SearchEngine
 {
     protected $locale = '';
 
-    /**
-     * fetches the next result page from the search engine
-     * and parses it. If the domain is linked on the page
-     * it returns an array identifying the link position, if
-     * not it returns null
-     *
-     * @throws Exception
-     * @access public
-     * @return int|null
-     */
-    public function getNextResultPage()
+    protected function getSearchUrl($page)
     {
-        $page = $this->nextPage();
-        $result = null;
-        if ($page > $this->max_pages)
-        {
-            return $result;
-        }
-
-        if ($this->debug)
-        {
-            echo "Fetching page #{$this->getCurrentPage()} for " . get_class($this) . PHP_EOL;
-        }
-
         $start = $page > 1 ? '&first=' . (($page - 1) * 10 + 1) : '';
-        $curl = curl_init($this->baseurl . 'search?filt=all&q=' . rawurlencode($this->keyword) . $start . $this->locale);
-        //curl_setopt($curl, CURLOPT_COOKIEJAR, $this->getCookieFileName());
-        curl_setopt($curl, CURLOPT_USERAGENT, $this->getUserAgent());
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        if (!($return = curl_exec($curl)))
-        {
-            throw new Exception("Failed to query search engine in " . get_class($this));
-        }
-        if ($this->debug)
-        {
-            print_r(curl_getinfo($curl));
-        }
-        try
-        {
-            if ($parsed = $this->_parseCurlReturn($return))
-            {
-                $result = ($page - 1) * 10 + $parsed;
-            }
-        }
-        catch(Exception $e)
-        {
-        }
-        return $result;
+        return $this->baseurl . 'search?filt=all&q=' . rawurlencode($this->keyword) . $start . $this->locale;
     }
 
     /**
-     * parses page fetched from Google
+     * parses page fetched from Bing
      *
-     * @param string $return - page fetched from Google
+     * @param string $return - page fetched from Bing
      *
-     * @access private
-     * @return int
+     * @access protected
+     * @return array
      */
-    private function _parseCurlReturn($return)
+    protected function _parseCurlReturn($return)
     {
-        preg_match_all('/<h3>(<a[^>]+>).*?<\/h3>/', $return, $matches);
+        preg_match_all('/<h3>(<a[^>]+>.*?<\/a>)<\/h3>/', $return, $matches);
         if (!empty($matches[1]))
         {
             $i = 1;
+            $return = array();
             foreach ($matches[1] as $link)
             {
-                if (preg_match('/<a\s+[^>]*href=[\'"]?([^\'" ]+)[\'"]?[^>]*>/', $link, $match) && strpos($match[1], $this->site) !== false)
+                if (preg_match('/<a\s+[^>]*href=[\'"]?([^\'" ]+)[\'"]?[^>]*>(.*?)<\/a>/', $link, $match))
                 {
-                    return $i;
+                    $return[$i] = array('url' => $match[1], 'headline' => strip_tags($match[2]));
                 }
                 $i++;
             }
-            return 0;
+            return $return;
         }
         else
         {

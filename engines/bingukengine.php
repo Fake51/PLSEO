@@ -47,9 +47,4 @@ class BingUkEngine extends BingEngine
 {
     protected $baseurl = "http://www.bing.com/";
     protected $locale = '&mkt=en-UK';
-
-    public function __construct($site, $keyword, $pages)
-    {
-        parent::__construct($site, $keyword, $pages);
-    }
 }
