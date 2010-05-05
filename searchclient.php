@@ -249,7 +249,7 @@ class SearchClient
      * @access public
      * @return void
      */
-    public function setSiteFile(array $sites)
+    public function setSiteArray(array $sites)
     {
         $this->_site_array = $sites;
     }
