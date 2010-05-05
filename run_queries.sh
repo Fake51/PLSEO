@@ -171,6 +171,7 @@ try
     }
 
     var_dump($client->findRankings());
+    var_dump($client->getSiteRankings());
 }
 catch (Exception $e)
 {

@@ -160,4 +160,32 @@ abstract class SearchEngine
     {
         return $this->_pages;
     }
+
+    public function checkResultsForSite($site)
+    {
+        $site_string = str_ireplace(array('http://', 'https://'), '', $site);
+        $site_string = substr($site_string, -1) == '/' ? substr($site_string, 0, -1) : $site_string;
+
+        $i = 0;
+        $found = false;
+        foreach ($this->getResults() as $result)
+        {
+            $ii = 1;
+            foreach ($result as $array)
+            {
+                if (stripos($array['url'], $site_string) !== false)
+                {
+                    $found = true;
+                    break 2;
+                }
+                $ii++;
+            }
+            $i++;
+        }
+        if (!$found)
+        {
+            return null;
+        }
+        return ($i * 10) + $ii;
+    }
 }

@@ -55,6 +55,7 @@ class SearchClient
     private $_search_engine;
     private $_debugging = false;
     private $_running_multiple_keywords = false;
+    private $_engine_results = array();
 
     const GOOGLECOM = 'GoogleComEngine';
     const GOOGLEDK = 'GoogleDkEngine';
@@ -326,6 +327,34 @@ class SearchClient
     }
 
     /**
+     * returns array of rankings per site per engine
+     *
+     * @throws Exception
+     * @access public
+     * @return array
+     */
+    public function getSiteRankings()
+    {
+        if (empty($this->_engines_running))
+        {
+            throw new Exception("No engines registered");
+        }
+
+        $return = array();
+        $sites = empty($this->_site) ? $this->_site_array : array($this->_site);
+        foreach ($sites as $site)
+        {
+            $temp = array();
+            foreach ($this->_engines_running as $name => $engine)
+            {
+                $temp[$name] = $engine->checkResultsForSite($site);
+            }
+            $return[$site] = $temp;
+        }
+        return $return;
+    }
+
+    /**
      * registers an engine for use for querying page ranks
      *
      * @param string $engine
@@ -384,8 +413,8 @@ class SearchClient
         }
         foreach ($this->_engines_running as $name => $engine)
         {
-            $this->_engines_running[$name] = $engine->getResults();
+            $this->_engine_results[$name] = $engine->getResults();
         }
-        return $this->_engines_running;;
+        return $this->_engine_results;
     }
 }
