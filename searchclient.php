@@ -331,7 +331,7 @@ class SearchClient
             {
                 return $return;
             }
-            file_put_contents($this->_output_file, $return, FILE_APPEND);
+            file_put_contents($this->_output_file, json_encode($return), FILE_APPEND);
             return true;
         }
         catch (Exception $e)
