@@ -241,6 +241,20 @@ class SearchClient
     }
 
     /**
+     * sets an array of sites
+     *
+     * @param array $sites
+     *
+     * @throws Exception
+     * @access public
+     * @return void
+     */
+    public function setSiteFile(array $sites)
+    {
+        $this->_site_array = $sites;
+    }
+
+    /**
      * runs multiple keyword checks, waiting a minute between each run
      *
      * @access private
