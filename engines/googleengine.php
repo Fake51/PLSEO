@@ -63,7 +63,7 @@ class GoogleEngine extends SearchEngine
      */
     protected function _parseCurlReturn($return)
     {
-        preg_match_all('/<h3 class=r>(.*?)<\/h3>/', $return, $matches);
+        preg_match_all('/<h3 class="?r"?>(.*?)<\/h3>/', $return, $matches);
         if (!empty($matches[1]))
         {
             $i = 1;

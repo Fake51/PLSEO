@@ -197,7 +197,7 @@ class SearchClient
      */
     public function setOutputFile($outputfile)
     {
-        if (!is_writable($outputfile))
+        if ((!is_writable($outputfile) && file_exists($outputfile)) || !is_writable(dirname($outputfile)))
         {
             throw new Exception("Cannot write to submitted outputfile" . PHP_EOL);
         }
