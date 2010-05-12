@@ -68,9 +68,10 @@ class YahooEngine extends SearchEngine
             $return = array();
             foreach ($matches[1] as $link)
             {
-                if (preg_match('/<a\s+[^>]*href=[\'"]?([^\'" ]+)[\'"]?[^>]*>(.*?)<\/a>/', $link, $match))
+                if (preg_match('/<a\s+[^>]*href=[\'"]?.*EXP=\d+\/\*\*([^\'" ]+)[\'"]?[^>]*>(.*?)<\/a>/', $link, $match))
                 {
-                    $return[$i] = array('url' => $match[1], 'headline' => strip_tags($match[2]));
+                    $l = str_ireplace(array('http%3a//', 'https%3a//'), array('http://', 'http://'), $match[1]);
+                    $return[$i] = array('url' => $l, 'headline' => strip_tags($match[2]));
                 }
                 $i++;
             }
