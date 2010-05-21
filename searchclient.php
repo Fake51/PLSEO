@@ -56,6 +56,7 @@ class SearchClient
     private $_debugging = false;
     private $_running_multiple_keywords = false;
     private $_engine_results = array();
+    private $_multiple_run_cache;
 
     const GOOGLECOM = 'GoogleComEngine';
     const GOOGLEDK = 'GoogleDkEngine';
@@ -290,6 +291,7 @@ class SearchClient
             }
             sleep(60);
         }
+        $this->_multiple_run_cache = $return;
         return $return;
     }
 
@@ -348,11 +350,29 @@ class SearchClient
     /**
      * returns array of rankings per site per engine
      *
-     * @throws Exception
      * @access public
      * @return array
      */
     public function getSiteRankings()
+    {
+        if (!empty($this->_keyword_array) && !empty($this->_multiple_run_cache))
+        {
+            return $this->_return_multiple_keywords();
+        }
+        else
+        {
+            return $this->_return_single_keyword();
+        }
+    }
+
+    /**
+     * returns array of rankings per site per engine
+     *
+     * @throws Exception
+     * @access public
+     * @return array
+     */
+    private function _return_single_keyword()
     {
         if (empty($this->_engines_running))
         {
@@ -369,6 +389,49 @@ class SearchClient
                 $temp[$name] = $engine->checkResultsForSite($site);
             }
             $return[$site] = $temp;
+        }
+        return $return;
+    }
+
+    /**
+     * returns array of rankings per site per engine
+     *
+     * @throws Exception
+     * @access public
+     * @return array
+     */
+    private function _return_multiple_keywords()
+    {
+        $sites = empty($this->_site) ? $this->_site_array : array($this->_site);
+        $temp_sites = array();
+        foreach ($sites as $i => $site)
+        {
+            $site_string = str_ireplace(array('http://', 'https://'), '', $site);
+            $site_string = substr($site_string, -1) == '/' ? substr($site_string, 0, -1) : $site_string;
+            $temp_sites[$site] = $site_string;
+        }
+
+        $return = array();
+
+        foreach ($this->_multiple_run_cache as $keyword => $engines)
+        {
+            foreach ($engines as $engine => $results)
+            {
+                foreach ($results as $page => $pageresults)
+                {
+                    foreach ($temp_sites as $site => $site_string)
+                    {
+                        $return[$keyword][$site][$engine] = null;
+                        foreach ($pageresults as $position => $data)
+                        {
+                            if (stripos($data['url'], $site_string) !== false)
+                            {
+                                $return[$keyword][$site][$engine] = $page * 10 + $position;
+                            }
+                        }
+                    }
+                }
+            }
         }
         return $return;
     }
