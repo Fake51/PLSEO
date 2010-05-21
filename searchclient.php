@@ -222,7 +222,7 @@ class SearchClient
         $this->_keyword_array = array_filter(explode("\n", str_replace(array("\r\n", "\r"), "\n", $file)));
     }
 
-    public function setKeywordArray(array ($keywords))
+    public function setKeywordArray(array $keywords)
     {
         $this->_keyword_array = array_filter($keywords);
     }
