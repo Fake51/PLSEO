@@ -5,10 +5,65 @@ output captured and used in some fashion.
 
 Usage
 =====
-The tools are supposed to be run using the .sh files. If you're on Windows
-or Mac have a look inside those files, there should be info enough for you to
-be able to create a .bat or the likes. Also, all .sh files should output some
-help text if you just run the without any parameters.
+The tools can be run on their own or as a library. To run them on their own
+have a look at the .sh file in the repo - it should give you ideas on how
+to get it running and how to create similar .bat scripts for windows.
+
+To run it as a library, you just need to include the searchclient.php file,
+instantiate a SearchClient object, and set a few settings on that - then you
+can call findRankings() and getSiteRankings() on the object and you should
+get the data output from the search.
+
+Output
+======
+The output of findRankings() is a multi-dimension array, the layout of which
+differs depending upon your settings. If you're just requesting rankings for
+one keyword, your output should look like (multiple sites makes no difference
+to the output as it returns search engine hits by keyword):
+array(
+ 'engine' => array(
+  page_number => array(
+   hit_number => array(
+    'url'      => hit url,
+    'headline' => headline of search hit
+   )
+  )
+ )
+)
+
+If you're querying multiple keywords, output is wrapped in an array, like:
+array(
+ keyword => array(
+  'engine' => array(
+   page_number => array(
+    hit_number => array(
+     'url'      => hit url,
+     'headline' => headline of search hit
+    )
+   )
+  )
+ )
+)
+
+The output of getSiteRankings() will display how the domains you queried
+rank in the search findings. The output looks like (for single keywords):
+array(
+ domain => array(
+  engine => rank
+ )
+)
+
+If you're querying for multiple keywords, the above is wrapped in an array,
+like this:
+array(
+ keyword => array(
+  domain => array(
+   engine => rank
+  )
+ )
+)
+
+A ranking of null means "not found" in the returned pages.
 
 Confused?
 =========
